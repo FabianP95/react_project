@@ -6,27 +6,24 @@ ReactDOM.render(element, container)
 
 // React.createElement() -> takes arguments, validates them and builds an element by the variables given in an object -> elements are objects
 //rebuild without using react
+
+/** @jsx Didact.createElement */
 const element = {
     type: "h1",
     props: {
         title: 'Test',
-        children: 'Hello Test'
+        children: [
+            createTextElement('Hello Test') 
+        ]
     }
 }
-
-const node = document.createElement(element.type)
-console.log(node);
-node["title"] = element.props.title
-
-
-
-const text = document.createTextNode("")
-text["nodeValue"] = element.props.children
-
 const container = document.getElementById("root")
 
-node.appendChild(text)
-container.appendChild(node)
+const Didact = {
+    createElement,
+    render,
+}
+
 
 function createElement(type, props, ...children) {
     return {
@@ -42,12 +39,34 @@ function createElement(type, props, ...children) {
     }
 }
 
-function createTextElement(text){
+function createTextElement(text) {
     return {
         type: "TEXT_ELEMENT",
         props: {
-            nodeValue:text,
-            children:[],
+            nodeValue: text,
+            children: [],
         }
     }
 }
+
+function render(element, container) {
+    const dom = element.type == "TEXT_ELEMENT" ? document.createTextNode("") : document.createElement(element.type)
+
+    const isProperty = key => key !== "children"
+    Object.keys(element.props)
+        .filter(isProperty)
+        .forEach(name => {
+            dom[name] = element.props[name]
+        })
+
+
+    container.appendChild(dom)
+    element.props.children.forEach(child =>
+        render(child, dom),
+
+
+    );
+
+}
+
+Didact.render(element, container)
